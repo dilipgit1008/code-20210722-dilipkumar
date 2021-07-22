@@ -1,0 +1,84 @@
+Assessments--
+1 . An SQS queue which subscribes to a SNS topic based on a particular message type
+2. A lambda function which is listening to the SQS Queue (in point 1) events and writing the messages body to s3
+3. S3 bucket configured with versioning and lifecycle polices for that data
+4 Necessary policies and roles required for this use-case
+
+------------------------------------------------------------------------------
+
+
+Solution----
+
+Steps 1-  SQS Service Actions --- 
+
+   A-  Create new queue in SQS aws service.
+   B-  we can select and congiure the SQS type as standard SQS and FIFO. 
+
+Steps 2-  SNS Service Actions
+
+   A- Create SNS topic name
+   B- Create subscription
+   C- Click on protocol and select 'Amazon SQS'
+   D- Set the SQS arn in Endpoint
+   E- Click on create subscription and your subscription will be successfully created.
+
+
+Step 3- Again SQS Service Ation after SNS creations.---
+
+   A- Create permission for SNS in SQS in permission section 
+   B- Select the following sections --
+       Effect -->   Allow
+       Principal  --> mark check Everybody
+    
+    --- You can set conditions---
+       Qualifier --> none
+       Condition --> StringEquals
+       Key --> awsSourceArn
+       Value --> set sns topic arn as value.
+
+   C- Click on Add permission and confirm Yes,Add Condition
+   
+
+Step 4- S3 bucket service
+
+   A- Create S3 bucket    Example bucket name -- sqs_bucket 
+   B- Set the versioning in s3 bucket.
+      --Goto  --> Properties
+      --Listed the versioning option
+      --Goto Versioning and set Enable and click on save
+   
+   C- Set the bucket lifecycle polices---
+      --Goto  --> Management
+      --Select lifecycle Rule as per requirements.
+
+Step  5- Lambda service
+
+   A- Create Lambda function
+   B- configure basic information in lambda--
+      - Function name --
+      - Runtime --- python version
+      - Select Role which we have created 
+   C- After Function creted we have  to Add Triger from Designer panel
+   D- Within trigger configuration select SQS
+   E- Select SQS arn in SQS queue field
+   F- As per requeirement select batch size and Add.
+   G- Now we need to write lambda function for sqs and s3 bucket.
+     
+     **check code files lambda_s3.py where i have written some python code to transfer sns data into s3 bucket.
+   
+   H- Save the SQS arn in lambda to trigger the SQS for processing.
+
+   I- Save this and go on SNS service to publish message and SQS to Send Message as testing purpose. 
+
+
+Policy and Role ----
+ Role--- Create IAM user role for lambda function. example-- lambda-role
+ 
+ Policies-----
+ --  AWSLambdaExecute policy
+ --  AmazoneSQSFullAcess policy  
+ --  AmazoneS3FullAccess policy 
+
+
+Note:- We can also assign only put and list object for s3 bucket as policy to lambda.  
+
